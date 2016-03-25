@@ -1,3 +1,12 @@
+/* 
+* Assumptions:
+* 1. All user input is:
+*  a. valid
+*  b. no greater in length than 10 digits
+*  c. positive values
+*  d. less than the maximum of a signed long(2,147,483,647)
+*/
+
 #include <iostream>
 #include <stdlib.h>
 
@@ -8,20 +17,9 @@ typedef struct node{
 	node* next;
 }node;
 
-//#define size 
-
-void printCharPtr(char* n) { 
-
-	for(; *(n) !='\0';n++) {
-
-		cout<<*n;
-
-
-	}
-	cout<<endl;
-
-}//end printChar
-
+/*
+* Stack operation: push
+*/
 void push(node*& head,char item) {
 
 	node* newNode = new node;
@@ -42,6 +40,9 @@ void push(node*& head,char item) {
 
 }//end push
 
+/*
+* Stack operation: pop
+*/
 char pop(node*& head) {
 
 	char data = head->data;
@@ -56,36 +57,57 @@ char pop(node*& head) {
 
 }//end pop
 
+/*
+* prints char* to console
+*/
+void printCharPtr(char* n) { 
+
+	for(; *(n) !='\0';n++) {//goes through and prints each el.
+				// stops at null terminator
+		cout<<*n;
+
+
+	}
+	cout<<endl;
+
+}//end printChar
+
+/*
+* returns length of char*
+*/
 int stringLength(char *a) {
 
     int counter = 0;
-//MAKE APP. VALUE FOR i<
-    for(int i = 0;i < 15; i++) {
+
+    for(int i = 0;i < 15; i++) {//goes through whole char*
 
         if(*(a+i) !='\0') {//looks for null terminator
 
-            counter++;    
+            counter++;//increment counter if not null term.
 
         } else break;        
 
     }//end loop
-return counter;
+
+	return counter;
+
 }//end stringLength
 
+/*
+* converts a long to a char*
+*/
+char* longToChar(long num,node*& stack) {
 
-
-char* longToChar(long long num,node*& stack) {
-
-	char* lToC = (char*)malloc(sizeof(num));
+	char* lToC = (char*)malloc(sizeof(num));//allocate mem
 	
-	char* temp = lToC;
+	char* temp = lToC; //hold address and used to manipulate
 
-	int m = 10;
+	int m = 10;//coeffiecents used to find isolate individual places
 	int n = 1;
 
-	while(n < num) {
+	while(n < num) {//parse each place and put onto stack
 
-		long long tmpNum = num;
+		long tmpNum = num;
 	
 		char tmp;
 
@@ -93,8 +115,8 @@ char* longToChar(long long num,node*& stack) {
 
 		tmpNum = tmpNum / n;
 
-		tmp = tmpNum + '0';
-//cout<<tmp<<endl;
+		tmp = tmpNum + '0';//convert to char
+
 		push(stack,tmp);
 
 		m = m *10;
@@ -102,21 +124,22 @@ char* longToChar(long long num,node*& stack) {
 
 	}
 
-	while(stack) {
+	while(stack) {//pop stack and return
 
 		*temp = pop(stack);
-//cout<<*temp<<endl;
+
 		temp++; 
 
 	}
 
-	
 	return lToC;
 
 }//end longToChar
 
-
-char* shiftAndPlace(char* list, int length, int shift) {
+/*
+* shifts char* by param. shift
+*/
+char* shift(char* list, int length, int shift) {
 
 	for(int i = length; i >= 0; i--) {//counting down to shift values 
 
@@ -126,24 +149,31 @@ char* shiftAndPlace(char* list, int length, int shift) {
 
 	return list;
 
-}//end shiftAndPlace
+}//end shift
 
+/*
+* returns the place higher than the number in param.
+* ex num = 1234 -> return = 10000
+*/
 
-long long highestPlace(long long num) {
+long highestPlace(long num) {
 
-	long long higher = 1;
+	long higher = 1;
 
 	while(higher < num) {
 
 		higher = higher * 10;
 		
-
 	}
 
 	return higher;
 
 }//end highestPlace
 
+/*
+* checks to see if el. with param. offset
+* is '0'
+*/
 bool isZeroNext(char* num,int offset) {
 
 	char* tmp = num;
@@ -155,27 +185,25 @@ bool isZeroNext(char* num,int offset) {
 
 
 /*
-*
+* puts commas in proper places for param. n
 */
-char* putCommas(long long n) {
+char* putCommas(long n) {
 
-	char* withCommas = (char*)malloc(100);
+	char* withCommas = (char*)malloc(100);//allocate memory
 
-	node* head = NULL;
+	node* head = NULL;//stack for checking if zeros are next and how many
 
-	char* tmp = longToChar(n,head);
+	char* tmp = longToChar(n,head);//converts n to a char*
 
-	bool isNextZero = isZeroNext(tmp,1);
-cout<< "isNextZero: " << isNextZero<<endl;	
-	int numOfZeros;
+	bool isNextZero = isZeroNext(tmp,1);//checks to see if next place is a 0
+	
+	int numOfZeros = 0;
 
-	if(isNextZero) {
-
+	if(isNextZero) {//counts how many zeros in a row
 
 		numOfZeros = 1;
 
 		int index = 2;
-
 
 		while(isZeroNext(tmp,index)) {
 			index++;
@@ -183,130 +211,92 @@ cout<< "isNextZero: " << isNextZero<<endl;
 
 		}
 
-//cout<< "numofzeros: " << numOfZeros<<endl;
-
 	}//end if
 
 
-	if(n < 10) {
+	if(n < 10) {//base case
 
-		*withCommas = (int)n  + '0';
-
+		if(n != 0) *withCommas = (int)n  + '0';//zeros will be handled in previous call
 
 		return withCommas;
 
 	} else {
 	
-		withCommas = putCommas(n % (highestPlace(n)/10));
+		withCommas = putCommas(n % (highestPlace(n)/10));//chop off highest place
 		 
-		int length = stringLength(withCommas);
-//printCharPtr(withCommas);
+		int length = stringLength(withCommas);//get length of returned withCommas
 
-
-		if(isNextZero) { 
+		if(isNextZero) { //accounts for zeros
 
 			for(int i = 0; i < numOfZeros; i++) {
-			
-				if( length == 3 || length == 7 || length == 11 ) {
+										//check lengths where commas are appropriate
+				if( length == 3 || length == 7 || length == 11 ) {//checks to see if commas should go 1st
 
-					withCommas = shiftAndPlace(withCommas, length, 3);
+					withCommas = shift(withCommas, length, 2);
 
-					*(withCommas+2) = ',';//add comma
+					*(withCommas+1) = ',';//add comma
+					*(withCommas) = '0';//add zero
+
+				} else if(length+1 == 3 || length +1 == 7 || length +1 == 11) {//checks to see if commas should go 2nd
+
+					withCommas = shift(withCommas, length, 2);
+
 					*(withCommas+1) = '0';//add zero
-
-				} else if(length+1 == 3 || length +1 == 7 || length +1 == 11) {
-
-					withCommas = shiftAndPlace(withCommas, length, 3);
-
-					*(withCommas+2) = '0';//add comma
-					*(withCommas+1) = ',';//add zero
+					*(withCommas) = ',';//add comma
 			
 
 				} else {
 		
-					withCommas = shiftAndPlace(withCommas, length, 2);
+					withCommas = shift(withCommas, length, 1);
 	
-					*(withCommas+1) = '0';//add zero
-
+					*(withCommas) = '0';//add zero
+					
 				}
 
+				length = stringLength(withCommas);//recalulate length to account for additions
+
+			}//end for
+
+			withCommas = shift(withCommas, length, 1);//shift by 1 to make room for #	
+
+			if((int)(n/(highestPlace(n)/10)) == 10) *withCommas = 1 + '0';//correcting for error with 0's where it would be 10 instead of 1
 			
-
-				length = stringLength(withCommas);
-
-			}//end for			
+			else *withCommas = (int)(n/(highestPlace(n)/10))  + '0';//add # to withCommas
 
 		} else {
 
-			if( length == 3 || length == 7 || length == 11 ) {
+			if( length == 3 || length == 7 || length == 11 ) {//check lengths where commas are appropriate
 
-
-				withCommas = shiftAndPlace(withCommas, length, 2);
+				withCommas = shift(withCommas, length, 2);
 
 				*(withCommas+1) = ',';//add comma
+								
 			} else {
 
-				withCommas = shiftAndPlace(withCommas, length, 1);
-
+				withCommas = shift(withCommas, length, 1);
+				
 			}			
 
-
+			if((int)(n/(highestPlace(n)/10)) == 10) *withCommas = 1 + '0';//correcting for error with 0's where it would be 10 instead of 1
+			
+			else *withCommas = (int)(n/(highestPlace(n)/10))  + '0';//add # to withCommas
 
 		}
-
-
-	*withCommas = (int)(n/(highestPlace(n)/10))  + '0';
 
 	return withCommas;//add isolated place value
 
 	}
 	
-	
-	
-
-
-
 }//end putCommas
-
-
-void printChar(char* n) { 
-
-	for(; *(n) !='\0';n++) {
-
-		cout<<*n;
-
-
-	}
-	cout<<endl;
-
-}//end printChar
-
 
 int main() {
 
-	node* stack = NULL;
+	long userNum;
 
- 	long long userNum;
+	cout<< "Please enter number: ";//prompt for user input
 
-	
-//cout<<sizeof(test);
-	cout<< "Please enter number: ";
+	cin>>userNum;//catch user input
 
-	cin>>userNum;
-//cout<< sizeof(userNum)<<endl;
+	printCharPtr(putCommas(userNum));//print results of putCommas
 
-	//char* num = longToChar(userNum,stack);
-//cout<<sizeof(num)<<endl;
-	char* num = putCommas(userNum);	
-//cout<<"length: "<<stringLength(num)<<endl;
-
-	
-
-	for(; *(num) !='\0';num++) {
-
-		cout<<*num;
-
-
-	}
-	cout<<endl;
 }//end main
